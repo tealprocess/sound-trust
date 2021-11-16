@@ -21,9 +21,10 @@ import {
 } from "./helpers/utilities";
 import { convertAmountToRawNumber, convertStringToHex } from "./helpers/bignumber";
 import { IAssetData } from "./helpers/types";
-import Banner from "./components/Banner";
+// import Banner from "./components/Banner";
 import AccountAssets from "./components/AccountAssets";
 import { eip712 } from "./helpers/eip712";
+import Sounds from "./components/Sounds";
 
 const SLayout = styled.div`
   position: relative;
@@ -486,19 +487,22 @@ class App extends React.Component<any, any> {
             {!address && !assets.length ? (
               <SLanding center>
                 <h3>
-                  {`Try out WalletConnect`}
+                  {`Welcome to Sound Trust`}
                   <br />
                   <span>{`v${process.env.REACT_APP_VERSION}`}</span>
                 </h3>
                 <SButtonContainer>
                   <SConnectButton left onClick={this.connect} fetching={fetching}>
-                    {"Connect to WalletConnect"}
+                    {"Connect Wallet"}
                   </SConnectButton>
                 </SButtonContainer>
               </SLanding>
             ) : (
               <SBalances>
-                <Banner />
+
+                <Sounds
+                  address={address}
+                />
                 <h3>Actions</h3>
                 <Column center>
                   <STestButtonContainer>
