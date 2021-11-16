@@ -26,6 +26,7 @@
     "url": "https://github.com/walletconnect/walletconnect-example-dapp/issues"
   },
   "dependencies": {
+    "@ensdomains/ensjs": "^2.0.1",
     "@types/eth-sig-util": "^2.1.1",
     "@walletconnect/client": "^1.6.5",
     "@walletconnect/qrcode-modal": "^1.6.5",
@@ -34,7 +35,7 @@
     "blockies-ts": "^1.0.0",
     "eth-sig-util": "^2.5.3",
     "ethereumjs-util": "^7.0.6",
-    "ethers": "^5.0.17",
+    "ethers": "^5.5.1",
     "node-gyp": "^8.1.0",
     "prop-types": "^15.7.2",
     "qr-image": "^3.2.0",

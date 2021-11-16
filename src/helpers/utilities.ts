@@ -5,6 +5,10 @@ import * as ethUtil from "ethereumjs-util";
 import { IChainData } from "./types";
 import { SUPPORTED_CHAINS } from "./chains";
 import { eip1271 } from "./eip1271";
+// import { ens } from "@ensdomains/ensjs";
+import { ethers } from "ethers";
+const provider = ethers.getDefaultProvider();
+
 
 export function capitalize(string: string): string {
   return string
@@ -34,6 +38,16 @@ export function ellipseText(text = "", maxLength = 9999): string {
       })
       .join(" ") + "...";
   return result;
+}
+
+export async function formatAddress(address = ""): Promise<any> {
+  return await provider.lookupAddress(address);
+
+  // if(name == null) {
+  //   name = ellipseAddress(address);
+  // }
+  //
+  // return name;
 }
 
 export function ellipseAddress(address = "", width = 10): string {

@@ -17,6 +17,7 @@ import {
   verifySignature,
   hashTypedDataMessage,
   hashMessage,
+  formatAddress,
 } from "./helpers/utilities";
 import { convertAmountToRawNumber, convertStringToHex } from "./helpers/bignumber";
 import { IAssetData } from "./helpers/types";
@@ -137,6 +138,7 @@ interface IAppState {
   uri: string;
   accounts: string[];
   address: string;
+  ensName: string;
   result: any | null;
   assets: IAssetData[];
 }
@@ -151,6 +153,7 @@ const INITIAL_STATE: IAppState = {
   uri: "",
   accounts: [],
   address: "",
+  ensName: "",
   result: null,
   assets: [],
 };
@@ -178,7 +181,7 @@ class App extends React.Component<any, any> {
     // subscribe to events
     await this.subscribeToEvents();
   };
-  public subscribeToEvents = () => {
+  public subscribeToEvents = async () => {
     const { connector } = this.state;
 
     if (!connector) {
@@ -219,11 +222,13 @@ class App extends React.Component<any, any> {
     if (connector.connected) {
       const { chainId, accounts } = connector;
       const address = accounts[0];
+      const ensName = await formatAddress(address);
       this.setState({
         connected: true,
         chainId,
         accounts,
         address,
+        ensName,
       });
       this.onSessionUpdate(accounts, chainId);
     }
@@ -246,11 +251,13 @@ class App extends React.Component<any, any> {
   public onConnect = async (payload: IInternalEvent) => {
     const { chainId, accounts } = payload.params[0];
     const address = accounts[0];
+    const ensName = await formatAddress(address);
     await this.setState({
       connected: true,
       chainId,
       accounts,
       address,
+      ensName,
     });
     this.getAccountAssets();
   };
@@ -261,7 +268,8 @@ class App extends React.Component<any, any> {
 
   public onSessionUpdate = async (accounts: string[], chainId: number) => {
     const address = accounts[0];
-    await this.setState({ chainId, accounts, address });
+    const ensName = await formatAddress(address);
+    await this.setState({ chainId, accounts, address, ensName });
     await this.getAccountAssets();
   };
 
@@ -456,6 +464,7 @@ class App extends React.Component<any, any> {
     const {
       assets,
       address,
+      ensName,
       connected,
       chainId,
       fetching,
@@ -469,6 +478,7 @@ class App extends React.Component<any, any> {
           <Header
             connected={connected}
             address={address}
+            ensName={ensName}
             chainId={chainId}
             killSession={this.killSession}
           />
