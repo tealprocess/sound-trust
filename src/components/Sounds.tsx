@@ -1,18 +1,49 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 // import Blockweave from 'blockweave';
+import { and, equals } from 'arql-ops';
+import Arweave from 'arweave';
+
+const arweave = Arweave.init({});
 
 interface ISoundsProps {
   address: string;
 }
 
 const Sounds = (props: ISoundsProps) => {
+  const [soundSrcs, setSrcs] = useState(['']);
+
   // const { address } = props;
   // const blockweave = new Blockweave();
-  // const yatusWallet = 'Z4yR345EQXPPGEipQ-nEcOyBnTIL0x6V2Z7-eIM0pWM';
+  const yatusWallet = 'Z4yR345EQXPPGEipQ-nEcOyBnTIL0x6V2Z7-eIM0pWM';
 
   // const soundType = "mp4";
-  const txnId = 'cX9tBmnHloLB7X6gMcIE5u07oJ-RcVOKkjBv7V38QF0';
-  const soundSrc = `https://arweave.net/${txnId}`;
+  // const txnId = 'cX9tBmnHloLB7X6gMcIE5u07oJ-RcVOKkjBv7V38QF0';
+  // const soundSrc = `https://arweave.net/${txnId}`;
+
+  useEffect(() => {
+    const getTxns = async () => {
+      try {
+        const myQuery = and(
+          equals('from', yatusWallet),
+          equals('soundTrust', 'true'),
+        );
+
+        const txns = await arweave.arql(myQuery);
+        console.log(txns);
+        txns.forEach(txnId => {
+          soundSrcs.push(`https://arweave.net/${txnId}`);
+          setSrcs(soundSrcs);
+        });
+         
+      } catch (error) {
+        console.log('error', error);
+      }
+    }
+
+    getTxns();
+  }, []);
+
   // const soundId = 0;
 
   // blockweave.wallets.getLastTransactionId(yatusWallet).then((transactionId) => {
@@ -46,8 +77,10 @@ const Sounds = (props: ISoundsProps) => {
     <React.Fragment>
       <h3>Sounds</h3>
       {/* }<div id="sounds">Yatu's Arweave Wallet: {yatusWallet}</div> */}
-
-      <audio src={soundSrc} controls />
+      {soundSrcs.map(soundSrc => {
+        console.log(soundSrc);
+        return (soundSrc) ? (<audio key={soundSrc} src={soundSrc} controls />) : '';
+      })}
     </React.Fragment>
   );
 }
