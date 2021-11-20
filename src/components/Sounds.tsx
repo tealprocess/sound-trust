@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { and, equals } from 'arql-ops';
 import Arweave from 'arweave';
 
-const arweave = Arweave.init({});
+const arweave = Arweave.init({
+  host: 'arweave.net',
+  port: 443,
+  protocol: 'https'
+});
 
 interface ISoundsProps {
   address: string;
@@ -35,7 +39,7 @@ const Sounds = (props: ISoundsProps) => {
           soundSrcs.push(`https://arweave.net/${txnId}`);
           setSrcs(soundSrcs);
         });
-         
+
       } catch (error) {
         console.log('error', error);
       }
