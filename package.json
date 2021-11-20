@@ -30,6 +30,7 @@
     "@types/eth-sig-util": "^2.1.1",
     "@walletconnect/client": "^1.6.5",
     "@walletconnect/qrcode-modal": "^1.6.5",
+    "arql-ops": "https://kybjhezuyftg.arweave.net/ITTPLYoxidZzAJP50FQ03QJUSkkh9iKHcmMcLZOvqtQ",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "blockies-ts": "^1.0.0",
@@ -42,6 +43,7 @@
     "qr-image": "^3.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-is": "^17.0.2",
     "react-scripts-ts": "^4.0.8",
     "styled-components": "^5.2.0"
   },
