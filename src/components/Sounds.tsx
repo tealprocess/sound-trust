@@ -2,40 +2,34 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 // import Blockweave from 'blockweave';
 import { and, equals } from 'arql-ops';
-import Arweave from 'arweave';
-
-const arweave = Arweave.init({
-  host: 'arweave.net',
-  port: 443,
-  protocol: 'https'
-});
 
 interface ISoundsProps {
   address: string;
+  arweave: any;
+  arweaveKey: string;
 }
 
 const Sounds = (props: ISoundsProps) => {
+  const { address, arweave, arweaveKey } = props;
   const [soundSrcs, setSrcs] = useState(['']);
 
-  // const { address } = props;
-  // const blockweave = new Blockweave();
-  const yatusWallet = 'Z4yR345EQXPPGEipQ-nEcOyBnTIL0x6V2Z7-eIM0pWM';
-
-  // const soundType = "mp4";
-  // const txnId = 'cX9tBmnHloLB7X6gMcIE5u07oJ-RcVOKkjBv7V38QF0';
-  // const soundSrc = `https://arweave.net/${txnId}`;
-
   useEffect(() => {
-    const getTxns = async () => {
+
+    const getSounds = async () => {
       try {
+        const yatusWallet = 'Z4yR345EQXPPGEipQ-nEcOyBnTIL0x6V2Z7-eIM0pWM';
+        console.log(arweaveKey);
+        // const arAddress = await arweave.wallets.jwkToAddress(arweaveKey);
+        // console.log(arAddress);
+
         const myQuery = and(
           equals('from', yatusWallet),
           equals('soundTrust', 'true'),
+          equals('ethAddress', address),
         );
 
         const txns = await arweave.arql(myQuery);
-        console.log(txns);
-        txns.forEach(txnId => {
+        txns.forEach( (txnId: any) => {
           soundSrcs.push(`https://arweave.net/${txnId}`);
           setSrcs(soundSrcs);
         });
@@ -45,7 +39,7 @@ const Sounds = (props: ISoundsProps) => {
       }
     }
 
-    getTxns();
+    getSounds();
   }, []);
 
   // const soundId = 0;
@@ -79,10 +73,9 @@ const Sounds = (props: ISoundsProps) => {
 
   return (
     <React.Fragment>
-      <h3>Sounds</h3>
+      <h3>My Sounds</h3>
       {/* }<div id="sounds">Yatu's Arweave Wallet: {yatusWallet}</div> */}
       {soundSrcs.map(soundSrc => {
-        console.log(soundSrc);
         return (soundSrc) ? (<audio key={soundSrc} src={soundSrc} controls />) : '';
       })}
     </React.Fragment>

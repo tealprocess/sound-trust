@@ -11,20 +11,39 @@ import Modal from "./components/Modal";
 import Header from "./components/Header";
 import Loader from "./components/Loader";
 import { fonts } from "./styles";
-import { apiGetAccountAssets, apiGetGasPrices, apiGetAccountNonce } from "./helpers/api";
+import { apiGetAccountAssets } from "./helpers/api";
 import {
-  sanitizeHex,
   verifySignature,
   hashTypedDataMessage,
   hashMessage,
   formatAddress,
 } from "./helpers/utilities";
-import { convertAmountToRawNumber, convertStringToHex } from "./helpers/bignumber";
 import { IAssetData } from "./helpers/types";
 // import Banner from "./components/Banner";
 import AccountAssets from "./components/AccountAssets";
 import { eip712 } from "./helpers/eip712";
 import Sounds from "./components/Sounds";
+import FileUploader from "./components/FileUploader";
+import Arweave from "arweave";
+
+// Or to specify a gateway when running from NodeJS you might use
+const arweave = Arweave.init({
+  host: 'arweave.net',
+  port: 443,
+  protocol: 'https'
+});
+
+// test arweave query in logs
+// import { and, equals } from 'arql-ops';
+// console.log(arweave);
+// const testRun = async () => {
+//   const myQuery = and(
+//     equals('from', 'Z4yR345EQXPPGEipQ-nEcOyBnTIL0x6V2Z7-eIM0pWM'),
+//   );
+
+//   console.log(await arweave.arql(myQuery));
+// }
+// testRun();
 
 const SLayout = styled.div`
   position: relative;
@@ -112,23 +131,6 @@ const SValue = styled.div`
   font-family: monospace;
 `;
 
-const STestButtonContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
-const STestButton = styled(Button as any)`
-  border-radius: 8px;
-  font-size: ${fonts.size.medium};
-  height: 44px;
-  width: 100%;
-  max-width: 175px;
-  margin: 12px;
-`;
-
 interface IAppState {
   connector: WalletConnect | null;
   fetching: boolean;
@@ -142,6 +144,9 @@ interface IAppState {
   ensName: string;
   result: any | null;
   assets: IAssetData[];
+  fileUploadState: string;
+  arweave: any;
+  arweaveKey: string;
 }
 
 const INITIAL_STATE: IAppState = {
@@ -157,6 +162,9 @@ const INITIAL_STATE: IAppState = {
   ensName: "",
   result: null,
   assets: [],
+  fileUploadState: "",
+  arweave: { arweave },
+  arweaveKey: "",
 };
 
 class App extends React.Component<any, any> {
@@ -290,81 +298,6 @@ class App extends React.Component<any, any> {
 
   public toggleModal = () => this.setState({ showModal: !this.state.showModal });
 
-  public testSendTransaction = async () => {
-    const { connector, address, chainId } = this.state;
-
-    if (!connector) {
-      return;
-    }
-
-    // from
-    const from = address;
-
-    // to
-    const to = address;
-
-    // nonce
-    const _nonce = await apiGetAccountNonce(address, chainId);
-    const nonce = sanitizeHex(convertStringToHex(_nonce));
-
-    // gasPrice
-    const gasPrices = await apiGetGasPrices();
-    const _gasPrice = gasPrices.slow.price;
-    const gasPrice = sanitizeHex(convertStringToHex(convertAmountToRawNumber(_gasPrice, 9)));
-
-    // gasLimit
-    const _gasLimit = 21000;
-    const gasLimit = sanitizeHex(convertStringToHex(_gasLimit));
-
-    // value
-    const _value = 0;
-    const value = sanitizeHex(convertStringToHex(_value));
-
-    // data
-    const data = "0x";
-
-    // test transaction
-    const tx = {
-      from,
-      to,
-      nonce,
-      gasPrice,
-      gasLimit,
-      value,
-      data,
-    };
-
-    try {
-      // open modal
-      this.toggleModal();
-
-      // toggle pending request indicator
-      this.setState({ pendingRequest: true });
-
-      // send transaction
-      const result = await connector.sendTransaction(tx);
-
-      // format displayed result
-      const formattedResult = {
-        method: "eth_sendTransaction",
-        txHash: result,
-        from: address,
-        to: address,
-        value: "0 ETH",
-      };
-
-      // display result
-      this.setState({
-        connector,
-        pendingRequest: false,
-        result: formattedResult || null,
-      });
-    } catch (error) {
-      console.error(error);
-      this.setState({ connector, pendingRequest: false, result: null });
-    }
-  };
-
   public testSignMessage = async () => {
     const { connector, address, chainId } = this.state;
 
@@ -461,6 +394,14 @@ class App extends React.Component<any, any> {
     }
   };
 
+  public handleKeyUpload = async (e: any) => {
+    // not sure why persist is needed
+    e.persist();
+    const reader = new FileReader();
+    reader.onload = (event: any) => { this.setState({ arweaveKey: event.target!.result }); };
+    reader.readAsText(e.target.files[0]);
+  }
+
   public render = () => {
     const {
       assets,
@@ -502,22 +443,23 @@ class App extends React.Component<any, any> {
 
                 <Sounds
                   address={address}
+                  arweave={arweave}
+                  arweaveKey={this.state.arweaveKey}
                 />
-                <h3>Actions</h3>
                 <Column center>
-                  <STestButtonContainer>
-                    <STestButton left onClick={this.testSendTransaction}>
-                      {"eth_sendTransaction"}
-                    </STestButton>
-
-                    <STestButton left onClick={this.testSignMessage}>
-                      {"eth_sign"}
-                    </STestButton>
-
-                    <STestButton left onClick={this.testSignTypedData}>
-                      {"eth_signTypedData"}
-                    </STestButton>
-                  </STestButtonContainer>
+                  {this.state.arweaveKey ? (
+                      <FileUploader
+                        address={address}
+                        arweave={arweave}
+                        arweaveKey={this.state.arweaveKey}
+                      />
+                    ) : (
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={this.handleKeyUpload}
+                      />
+                  )}
                 </Column>
                 <h3>Balances</h3>
                 {!fetching ? (
